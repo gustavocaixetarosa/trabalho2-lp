@@ -1,10 +1,12 @@
+#include<limits.h>
+#include<stdbool.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
 
 
-#define QTD_ALUNOS_TURMA 3
-#define QTD_TURMAS 2
+#define QTD_ALUNOS_TURMA 5
+#define QTD_TURMAS 4
 
 
 typedef struct vencQuadri {
@@ -20,6 +22,13 @@ typedef struct bruxo {
     int destreza;
     int carisma;
 } Bruxo;
+
+typedef struct equipePF {
+    int aluno1;
+    int aluno2;
+    int aluno3;
+    int destrezaEquipe;
+} EquipePedra;
 
 typedef struct turma {
     char nome[30];
@@ -187,6 +196,84 @@ void artesArcanistasArcanas(Turma turmas[]){
     }
 }
 
+void selecionaTresAlunos(EquipePedra *equipe){
+    equipe->aluno1 = rand() % QTD_ALUNOS_TURMA;
+    do {
+        equipe->aluno2 = rand() % QTD_ALUNOS_TURMA;
+    } while (equipe->aluno2 == equipe->aluno1);
+    
+    do {
+        equipe->aluno3 = rand() % QTD_ALUNOS_TURMA;
+    } while (equipe->aluno3 == equipe->aluno1 || equipe->aluno3 == equipe->aluno2);    
+}
+
+void calcularSomaDestrezaDaEquipe(EquipePedra *equipe, Turma turmas[], int numeroTurma){
+    int destrezaTotal = 0;
+    destrezaTotal += turmas[numeroTurma].alunos[equipe->aluno1].destreza;
+    destrezaTotal += turmas[numeroTurma].alunos[equipe->aluno2].destreza;
+    destrezaTotal += turmas[numeroTurma].alunos[equipe->aluno3].destreza;
+    equipe->destrezaEquipe = destrezaTotal;
+}
+
+void zerarHabilidades(Turma turmas[], EquipePedra *equipe, int numeroEquipe){
+    turmas[numeroEquipe].alunos[equipe->aluno1].carisma = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno1].inteligencia = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno1].destreza = 0;
+    
+    turmas[numeroEquipe].alunos[equipe->aluno2].carisma = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno2].inteligencia = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno2].destreza = 0;
+
+    turmas[numeroEquipe].alunos[equipe->aluno3].carisma = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno3].inteligencia = 0;
+    turmas[numeroEquipe].alunos[equipe->aluno3].destreza = 0;
+}
+
+bool equipeAchouAPedraFloatzal(){
+    int numero = rand() % 10;
+    if(numero == 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void pedraFloatzal(Turma turmas[]){
+    printf("\n\n\n**** Desafio da Pedra Floatzal ****\n\n\n");
+    EquipePedra equipes[QTD_TURMAS];
+    int equipeComMenorDestreza, menorDestreza = INT_MAX, equipeEncontrouPedra = -1;
+    for(int i = 0; i < QTD_TURMAS; i++){
+        selecionaTresAlunos(&equipes[i]);
+        calcularSomaDestrezaDaEquipe(&equipes[i], turmas, i);
+        if(equipes[i].destrezaEquipe < menorDestreza){
+            equipeComMenorDestreza = i;
+            menorDestreza = equipes[i].destrezaEquipe;
+        }
+        printf("O carisma da turma %s e %d!\n", turmas[i].nome, equipes[i].destrezaEquipe); 
+    }
+
+    printf("Infelizmente a equipe dos %s foi pega pelo perigoso Valdechar(Aquele nao devemos pronunciar!!!)!\n", turmas[equipeComMenorDestreza].nome);
+    printf("Por isso, todos os atributos da sua equipe foi completamente drenada!!\n");
+    zerarHabilidades(turmas, &equipes[equipeComMenorDestreza], equipeComMenorDestreza);
+
+    do {
+        for(int i = 0; i < QTD_TURMAS; i++){
+            if(i == equipeComMenorDestreza){
+                continue;
+            }
+            if(equipeAchouAPedraFloatzal()){
+                printf("A equipe %s encontrou a pedra floatzal!!! Palmas, por favor! Com isso, ganharam 20 grandes pontos!!!\n",
+                turmas[i].nome);
+                equipeEncontrouPedra = i;
+                break;
+            }
+        }
+    } while(equipeEncontrouPedra == -1);
+
+    turmas[equipeEncontrouPedra].pontos += 20;
+    printf("\n\n**** FIM DO DESAFIO DA PEDRA FLOATZ ****\n\n\n");
+}
+
 void executaDesafioEscolhido(int escolha, Turma turmas[]){
     switch (escolha)
     {
@@ -195,24 +282,89 @@ void executaDesafioEscolhido(int escolha, Turma turmas[]){
         break;
     case 2:
         artesArcanistasArcanas(turmas);
-    default:
         break;
+    case 3:
+        pedraFloatzal(turmas);
+        break;
+    default:
+        printf("Opcao nao encontrada. Tente novamente.\n");
     }
 }
 
+void zeraPontosDasTurmas(Turma turmas[]){
+    for(int i = 0; i < QTD_TURMAS; i++){
+        turmas[i].pontos = 0;
+    }
+}
+
+void exibeQuadroDePontos(Turma turmas[]){
+    printf("\n\n**** QUADRO DE PONTOS ****\n\n");
+    for(int i = 0; i < QTD_TURMAS; i++){
+        printf("Turma : %s\nPontos: %d\n\n", turmas[i].nome, turmas[i].pontos);
+    }
+}
+
+int calculaEquipeVencedora(Turma turmas[]){
+    int maiorPontos = -1, equipeVencedora;
+    for(int i = 0; i < QTD_TURMAS; i++){
+        if(turmas[i].pontos > maiorPontos){
+            maiorPontos = turmas[i].pontos;
+            equipeVencedora = i;
+        }
+    }
+    return equipeVencedora;
+}
+
 void executarDesafios(Turma turmas[]){
-    int desafio;
-    quadroDeDesafios();
-    scanf("%d", &desafio);
-    executaDesafioEscolhido(desafio, turmas);
+    printf("\n\n\n**** DESAFIOS ****\n\n");
+    printf("No total teremos 5 desafios de tirar o folego!\n");
+    int desafio, equipeVencedora;
+    zeraPontosDasTurmas(turmas);
+    for(int i = 0; i < 5; i++){
+        printf("%d desafio: ", i + 1);
+        quadroDeDesafios();
+        scanf("%d", &desafio);
+        executaDesafioEscolhido(desafio, turmas);
+        exibeQuadroDePontos(turmas);
+    }
+
+    equipeVencedora = calculaEquipeVencedora(turmas);
+    printf("Com o fim dos desafios, temos a nossa campea!!!\n\n");
+    printf("Muito barulho e palmas para a turma %s que venceu os desafios com o total de %d pontos!!!\n\n Clap* Clap*(Todo mundo aplaudindo...)\n\n",
+        turmas[equipeVencedora].nome, turmas[equipeVencedora].pontos);
 }
 
 void dadosDasTurmas(Turma turmas[]){
+    printf("\n\n**** DADOS DAS TURMAS ****\n\n");
+    for(int i = 0; i < QTD_TURMAS; i++){
+        printf("Turma %s\n", turmas[i].nome);
+        printf("Alunos: ");
+        for(int j = 0; j < QTD_ALUNOS_TURMA; j++){
+            printf("Nome: %s", turmas[i].alunos[j].nome);
+        }
+    }
+}
 
+void exibeNomeTodasTurmas(Turma turmas[]){
+    for(int i = 0; i < QTD_TURMAS; i++){
+        printf("\n%d. %s\n", i + 1, turmas[i]);
+    }
+}
+
+void exibeDadosTurma(Turma *turma){
+    printf("\nTurma %s\n", turma->nome);
+    for(int i = 0; i < QTD_ALUNOS_TURMA; i++){
+        printf("Aluno %s   Inteligencia: %d   Destreza: %d   Carisma: %d\n", turma->alunos[i].nome, turma->alunos[i].inteligencia, turma->alunos[i].destreza, turma->alunos[i].carisma);
+    }
 }
 
 void dadosAlunos(Turma turmas[]){
-
+    int turmaEscolhida;
+    printf("Escolha uma turma para ver os dados dos seus alunos: ");
+    exibeNomeTodasTurmas(turmas);
+    scanf("%d", &turmaEscolhida);
+    turmaEscolhida -= 1;
+    exibeDadosTurma(&turmas[turmaEscolhida]);
 }
 
 void sair(){
