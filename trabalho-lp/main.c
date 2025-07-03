@@ -355,7 +355,7 @@ void exibeNomeTodasTurmas(Turma turmas[]){
 void exibeDadosTurma(Turma *turma){
     printf("\nTurma %s\n", turma->nome);
     for(int i = 0; i < QTD_ALUNOS_TURMA; i++){
-        printf("Aluno %s   Inteligencia: %d   Destreza: %d   Carisma: %d\n", turma->alunos[i].nome, turma->alunos[i].inteligencia, turma->alunos[i].destreza, turma->alunos[i].carisma);
+        printf("Aluno: %s   Inteligencia: %d   Destreza: %d   Carisma: %d\n", turma->alunos[i].nome, turma->alunos[i].inteligencia, turma->alunos[i].destreza, turma->alunos[i].carisma);
     }
 }
 
