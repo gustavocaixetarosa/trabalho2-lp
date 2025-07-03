@@ -6,7 +6,7 @@
 
 
 #define QTD_ALUNOS_TURMA 5
-#define QTD_TURMAS 4
+#define QTD_TURMAS 2
 
 
 typedef struct vencQuadri {
@@ -340,8 +340,9 @@ void dadosDasTurmas(Turma turmas[]){
         printf("Turma %s\n", turmas[i].nome);
         printf("Alunos: ");
         for(int j = 0; j < QTD_ALUNOS_TURMA; j++){
-            printf("Nome: %s", turmas[i].alunos[j].nome);
+            printf("Nome: %s ", turmas[i].alunos[j].nome);
         }
+        printf("\n");
     }
 }
 
